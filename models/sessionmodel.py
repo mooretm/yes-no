@@ -40,22 +40,27 @@ class SessionParsModel:
         'cal_file': {'type': 'str', 'value': 'cal_stim.wav'},
 
         # Presentation level variables
-        'scaling_factor': {'type': 'float', 'value': -30.0},
-        'db_level': {'type': 'float', 'value': -30.0},
+        'scaling_factor': {'type': 'float', 'value': -25.0},
+        'db_level': {'type': 'float', 'value': 75},
 
         # Version control variables
+        'config_file_status': {'type': 'int', 'value': 0},
         'check_for_updates': {'type': 'str', 'value': 'yes'},
         'version_lib_path': {'type': 'str', 'value': r'\\starfile\Public\Temp\MooreT\Custom Software\version_library.csv'},
     }
 
 
     def __init__(self, _app_info):
+        # Assign variables
+        self._app_info = _app_info
+
         # Create session parameters file name
-        filename = _app_info['name'] + '.json'
+        #filename = _app_info['name'] + '.json'
+        filename = 'config.json'
 
         # Create a folder to store the session parameters file
         # in user's home directory
-        directory = Path.home() / _app_info['name']
+        directory = Path.home() / self._app_info['name']
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -88,7 +93,11 @@ class SessionParsModel:
         # Populate session parameter dictionary
         for key in self.fields:
             if key in raw_values and 'value' in raw_values[key]:
-                raw_value = raw_values[key]['value']
+                # update config file status here
+                if key == 'config_file_status':
+                    raw_value = 1
+                else:
+                    raw_value = raw_values[key]['value']
                 self.fields[key]['value'] = raw_value
 
 

@@ -28,10 +28,10 @@ from functions import general
 from exceptions import audio_exceptions
 # Model imports
 from models import sessionmodel
+from models import versionmodel
 from models import audiomodel
 from models import calmodel
 from models import csvmodel
-from models import updatermodel
 # View imports
 from views import mainview
 from views import sessionview
@@ -53,7 +53,7 @@ class Application(tk.Tk):
         #############
         self.NAME = 'Yes-No Task Controller'
         self.VERSION = '0.0.0'
-        self.EDITED = 'July 18, 2023'
+        self.EDITED = 'July 19, 2023'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -80,7 +80,8 @@ class Application(tk.Tk):
         self.response = 999
 
         # Load current session parameters from file
-        # Or load defaults if file does not exist yet
+        # or load defaults if file does not exist yet
+        # Check for version updates and destroy if mandatory
         self.sessionpars_model = sessionmodel.SessionParsModel(self._app_info)
         self._load_sessionpars()
 
@@ -139,11 +140,40 @@ class Application(tk.Tk):
         self.center_window()
 
         # Check for updates
-        if self.sessionpars['check_for_updates'].get() == 'yes':
+        if (self.sessionpars['check_for_updates'].get() == 'yes') and \
+        (self.sessionpars['config_file_status'].get() == 1):
             _filepath = self.sessionpars['version_lib_path'].get()
-            u = updatermodel.VersionChecker(_filepath, self.NAME, self.VERSION)
-            if not u.current:
+            u = versionmodel.VersionChecker(_filepath, self.NAME, self.VERSION)
+            if u.status == 'mandatory':
+                messagebox.showerror(
+                    title="New Version Available",
+                    message="A mandatory update is available. Please install " +
+                        f"version {u.new_version} to continue.",
+                    detail=f"You are using version {u.app_version}, but " +
+                        f"version {u.new_version} is available."
+                )
                 self.destroy()
+            elif u.status == 'optional':
+                messagebox.showwarning(
+                    title="New Version Available",
+                    message="An update is available.",
+                    detail=f"You are using version {u.app_version}, but " +
+                        f"version {u.new_version} is available."
+                )
+            elif u.status == 'current':
+                pass
+            elif u.status == 'app_not_found':
+                messagebox.showerror(
+                    title="Update Check Failed",
+                    message="Cannot retrieve version number!",
+                    detail=f"'{self.NAME}' does not exist in the version library."
+                 )
+            elif u.status == 'library_inaccessible':
+                messagebox.showerror(
+                    title="Update Check Failed",
+                    message="The version library is unreachable!",
+                    detail="Please check that you have access to Starfile."
+                )
 
 
     #####################
@@ -228,7 +258,10 @@ class Application(tk.Tk):
     # File Menu Funcs #
     ###################
     def start_task(self):
-        # Calculate level based on SLM offset
+
+        print(f"\ncontroller: Config file status: {self.sessionpars['config_file_status'].get()}")
+
+        # Calculate desired level
         self._calc_level(90)
 
         # Create audio object
