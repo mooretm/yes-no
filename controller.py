@@ -265,9 +265,8 @@ class Application(tk.Tk):
         self._calc_level(90)
 
         # Create audio object
-        _path = r'C:\Users\MooTra\OneDrive - Starkey\Desktop\stim2.wav'
         try:
-            self.a = audiomodel.Audio(Path(_path))
+            self.a = audiomodel.Audio(Path(r'.\sample_stim.wav'))
         except FileNotFoundError:
             messagebox.showerror(
                 title="File Not Found",
@@ -310,19 +309,50 @@ class Application(tk.Tk):
                 message="The response type is invalid!",
                 detail=f'Response was {self.response}, but expected 0 or 1'
             )
+        
+        self._on_save()
 
 
     def _on_save(self):
-        """ Format values and send to csv model.
+        """ Select data to save and send to csv model.
         """
         # Get tk variable values
-        data = dict()
+        converted = dict()
         for key in self.sessionpars:
-            data[key] = self.sessionpars[key].get()
+            converted[key] = self.sessionpars[key].get()
+
+        # Define selected items for writing to file
+        save_list = ['subject', 'condition', 'randomize', 'repetitions', 
+            'slm_reading', 'cal_scaling_factor', 'slm_offset', 
+            'scaling_factor', 'db_level']
+        
+        # Create new dict with desired items
+        try:
+            data = dict((k, converted[k]) for k in save_list)
+        except KeyError as e:
+            print('\ncontroller: Unexpected variable when attempting ' +
+                  f'to save: {e}')
+            messagebox.showerror(
+                title="Undefined Variable",
+                message="Data not saved!",
+                detail=f'{e} is undefined.'
+            )
+            self.destroy()
+            return
 
         # Save data
         print('controller: Calling save record function...')
-        self.csvmodel.save_record(data)
+        try:
+            self.csvmodel.save_record(data)
+        except PermissionError as e:
+            print(e)
+            messagebox.showerror(
+                title="Access Denied",
+                message="Data not saved! Cannot write to file!",
+                detail=e
+            )
+            self.destroy()
+            return
 
 
     ############################

@@ -99,7 +99,8 @@ class Audio:
 
         # Check channel routing
         if (self.num_channels != len(self.routing)) or (not self.routing):
-            raise audio_exceptions.InvalidRouting(self.num_channels, self.routing)
+            raise audio_exceptions.InvalidRouting(
+                self.num_channels, self.routing)
 
         # Set level
         self._set_level()

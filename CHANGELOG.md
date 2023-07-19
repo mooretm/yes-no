@@ -4,7 +4,7 @@
 
 ## v0.0.0
 
-Date: June 23, 2022
+Date: July 19, 2023
 
 ### Initial Release
 1. Empty GUI framework for development. 

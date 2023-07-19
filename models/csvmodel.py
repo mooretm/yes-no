@@ -1,4 +1,4 @@
-""" Model to write data to .csv
+""" Class to write data to .csv
 """
 
 ############
