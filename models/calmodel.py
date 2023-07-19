@@ -96,7 +96,7 @@ class CalModel:
 
         return routing
 
-    
+
     def stop_cal(self):
         try:
             self.cal.stop()

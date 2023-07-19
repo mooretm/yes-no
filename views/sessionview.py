@@ -13,6 +13,9 @@ from tkinter import filedialog
 # Import system packages
 import os
 
+# Import custom modules
+from functions import general
+
 
 #########
 # BEGIN #
@@ -26,6 +29,7 @@ class SessionDialog(tk.Toplevel):
         self.sessionpars = sessionpars
 
         self.withdraw()
+        self.resizable(False, False)
         self.title("Session Parameters")
         self.grab_set()
 
@@ -47,16 +51,18 @@ class SessionDialog(tk.Toplevel):
 
         # Audio file browser frame
         frm_audiopath = ttk.Labelframe(self, text="Audio File Directory")
-        frm_audiopath.grid(row=15, column=5, **frame_options, ipadx=5, ipady=5)
+        frm_audiopath.grid(row=15, column=5, **frame_options, ipadx=5, 
+            ipady=5)
 
-        # Sentence file browser frame
+        # Matrix file browser frame
         frm_matrixpath = ttk.Labelframe(self, text='Matrix File Path')
-        frm_matrixpath.grid(row=20, column=5, **frame_options, ipadx=5, ipady=5)
+        frm_matrixpath.grid(row=20, column=5, **frame_options, ipadx=5, 
+            ipady=5)
 
 
-        #######################
-        # Create view widgets #
-        #######################
+        ################
+        # Draw Widgets #
+        ################
         # Subject
         ttk.Label(frm_session, text="Subject:"
             ).grid(row=5, column=5, sticky='e', **widget_options)
@@ -75,7 +81,8 @@ class SessionDialog(tk.Toplevel):
         #self.random_var = tk.IntVar(value=self.sessionpars['randomize'])
         chk_random = ttk.Checkbutton(frm_options, text="Randomize",
             takefocus=0, variable=self.sessionpars['randomize'])
-        chk_random.grid(row=5, column=5,  columnspan=20, sticky='w', **widget_options)
+        chk_random.grid(row=5, column=5,  columnspan=20, sticky='w', 
+            **widget_options)
 
         # Repetitions
         ttk.Label(frm_options, text="Presentation(s):"
@@ -84,35 +91,54 @@ class SessionDialog(tk.Toplevel):
             textvariable=self.sessionpars['repetitions']
             ).grid(row=10, column=10, sticky='w')
 
-        # Audio directory
+
+        ###################
+        # Audio Directory #
+        ###################
+        # Descriptive label
         ttk.Label(frm_audiopath, text="Path:"
             ).grid(row=20, column=5, sticky='e', **widget_options)
-        # Get audio directory from sessionpars dict
-        full_audio_path = self.sessionpars['audio_files_path'].get()
-        # Truncate to fit in label
-        short_audio_path = self._truncate_path(full_audio_path)
+
+        # Retrieve and truncate previous audio directory
+        short_audio_path = general.truncate_path(
+            self.sessionpars['audio_files_dir'].get()
+        )
+
         # Create textvariable
         self.audio_var = tk.StringVar(value=short_audio_path)
+
+        # Audio directory label
         ttk.Label(frm_audiopath, textvariable=self.audio_var, 
             borderwidth=2, relief="solid", width=60
             ).grid(row=20, column=10, sticky='w')
-        ttk.Button(frm_audiopath, text="Browse", command=self._get_audio_directory, state='disabled'
+        ttk.Button(frm_audiopath, text="Browse", 
+            command=self._get_audio_directory,
             ).grid(row=25, column=10, sticky='w', pady=(0, 10))
 
-        # Matrix directory
+
+        ####################
+        # Matrix Directory #
+        ####################
+        # Descriptive label
         ttk.Label(frm_matrixpath, text="Path:"
             ).grid(row=30, column=5, sticky='e', **widget_options)
-        # Get audio directory from sessionpars dict
-        full_matrix_path = self.sessionpars['matrix_file_path'].get()
-        # Truncate to fit in label
-        short_matrix_path = self._truncate_path(full_matrix_path)
+        
+        # Retrieve and truncate existing audio directory
+        short_matrix_path = general.truncate_path(
+            self.sessionpars['matrix_file_path'].get()
+        )
+
         # Create textvariable
         self.matrix_var = tk.StringVar(value=short_matrix_path)
+
+        # Matrix file label
         ttk.Label(frm_matrixpath, textvariable=self.matrix_var, 
             borderwidth=2, relief="solid", width=60
             ).grid(row=30, column=10, sticky='w')
-        ttk.Button(frm_matrixpath, text="Browse", command=self._get_matrix_file
-            ).grid(row=35, column=10, sticky='w', pady=(0, 10))
+        ttk.Button(frm_matrixpath, text="Browse", 
+            command=self._get_matrix_file).grid(row=35, column=10, 
+            sticky='w', pady=(0, 10))
+
 
         # Submit button
         btn_submit = ttk.Button(self, text="Submit", command=self._on_submit)
@@ -138,38 +164,31 @@ class SessionDialog(tk.Toplevel):
         self.deiconify()
 
 
-    def _truncate_path(self, long_path):
-        """ Truncate path (if necessary) and return value
-        """
-        if len(long_path) > 60:
-            short = '...' + long_path[-60:]
-            return short
-        else:
-            if long_path == "":
-                return 'Please provide a path'
-            else:
-                return long_path
-
-
     def _get_audio_directory(self):
         """ Get path to audio files
         """
-        self.sessionpars['audio_files_path'].set(
-            filedialog.askdirectory(title="Audio File Directory"))
+        # Get directory from dialog
+        filename = filedialog.askdirectory(title="Audio File Directory")
+
+        # Update sessionpars with audio files dir
+        self.sessionpars['audio_files_dir'].set(filename)
+
+        # Update audio label
+        self.audio_var.set(general.truncate_path(filename))
 
 
     def _get_matrix_file(self):
         """ Get path to matrix file
         """
         # Get file from dialog
-        filename = filedialog.askopenfilename(title="Matrix File", filetypes=[("CSV", "*.csv")])
-        # Set file plus path to sessionpars
+        filename = filedialog.askopenfilename(title="Matrix File", 
+            filetypes=[("CSV", "*.csv")])
+        
+        # Update sessionpars with matrix file path
         self.sessionpars['matrix_file_path'].set(filename)
 
-        # Get directory based on matrix file folder
-        directory = os.path.split(self.sessionpars['matrix_file_path'].get())[0]
-        # Set audio directory to sessionpars
-        self.sessionpars['audio_files_path'].set(directory)
+        # Update matrix label
+        self.matrix_var.set(general.truncate_path(filename))
 
 
     def _check_presentations(self):

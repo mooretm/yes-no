@@ -28,11 +28,11 @@ def truncate_path(long_path):
     """ Truncate path (if necessary) and return 
         shortened path for display
     """
-    if len(long_path) > 60:
-        short = '...' + long_path[-60:]
+    if len(long_path) >= 60:
+        short = '...' + long_path[-55:]
         return short
     else:
         if long_path == "":
-            return 'Please select a .wav file'
+            return 'Please select a file'
         else:
             return long_path

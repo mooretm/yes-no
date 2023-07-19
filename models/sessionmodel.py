@@ -26,7 +26,7 @@ class SessionParsModel:
         'repetitions': {'type': 'int', 'value': 1},
 
         # Stimulus variables
-        'audio_files_path': {'type': 'str', 'value': 'Please select a folder'},
+        'audio_files_dir': {'type': 'str', 'value': 'Please select a folder'},
         'matrix_file_path': {'type': 'str', 'value': 'Please select a file'},
         
         # Audio device variables

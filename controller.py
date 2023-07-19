@@ -1,5 +1,10 @@
 """ Yes/No task controller. 
 
+    This controller is a simple yes/no presenter; it is not adaptive.
+    Responses can be collected using a numberpad (default), and/or on-screen
+    buttons. Responses are categorized as signal detection proportions (i.e., 
+    hits, misses, false alarms, correct rejections) to aid in data analysis.
+
     Written by: Travis M. Moore
     Created: July 14, 2023
 """

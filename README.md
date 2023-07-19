@@ -1,8 +1,8 @@
-# **Base GUI**
+# **Yes/No Task Controller**
 
 - Written by: **Travis M. Moore**
 - Latest version: **Version 0.0.0**
-- Originally created: **June 23, 2022**
+- Created: **July 14, 2023**
 - Last edited: **July 19, 2023**
 <br>
 <br>
@@ -10,7 +10,7 @@
 ---
 
 ## Description
-- Base GUI, ready to go!
+This controller is a simple yes/no presenter; it is not adaptive. Responses can be collected using a numberpad and/or on-screen buttons. Responses are categorized as signal detection proportions (i.e., hits, misses, false alarms, correct rejections) to aid in data analysis.
 <br>
 <br>
 
