@@ -88,7 +88,6 @@ class MainFrame(ttk.Frame):
         self.btn_submit.grid(row=10, column=5)
 
 
-
     #############
     # Functions #
     #############

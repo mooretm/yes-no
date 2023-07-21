@@ -13,6 +13,7 @@ rcParams.update({'figure.autolayout': True})
 
 # Import system packages
 import os
+from pathlib import Path
 
 # Import audio packages
 import soundfile as sf
@@ -29,39 +30,63 @@ class Audio:
     """ Class for use with .wav files.
     """
 
-    def __init__(self, file_path):
-        """ Read audio file and generate info.
-            file_path: a Path object from pathlib
+    def __init__(self, audio, **kwargs):
+        """ Create audio object using file path or signal array
+            audio: a Path object from pathlib, or a numpy array
+            kwargs: must provide a sampling rate when passing an array
         """
+        # Assign public attributes
+        self.audio = audio
+        if 'sampling_rate' in kwargs:
+            self.fs = kwargs['sampling_rate']
+
+        # Print message to console
         self.msg = "Begin Audio Event"
         print('')
         print('*' * len(self.msg))
         print(self.msg)
         print('*' * len(self.msg))
 
-        print(f"audiomodel: Loading {os.path.basename(file_path)}...")
-        
+        # If AUDIO argument is a Path, import .wav file;
+        if isinstance(audio, Path):
+            self._import_wav_file()
+        # If AUDIO is an array, assign it to signal
+        elif isinstance(audio, np.ndarray):
+            print("audiomodel: Found audio ndarray object")
+            self.signal = self.audio
+        else:
+            print("audiomodel: Unrecognized audio type")
+            raise audio_exceptions.InvalidAudioType(type(self.audio))
+
+        # Get audio details
+        self._get_audio_details()
+
+
+    def _import_wav_file(self):
+        print(f"audiomodel: Loading {os.path.basename(self.audio)}...")
+
         # Parse file path
-        self.directory = os.path.split(file_path)[0]
-        self.name = os.path.basename(file_path)
-        self.file_path = file_path
+        self.directory = os.path.split(self.audio)[0]
+        self.name = os.path.basename(self.audio)
 
         # Read audio file
-        file_exists = os.access(self.file_path, os.F_OK)
+        file_exists = os.access(self.audio, os.F_OK)
         if not file_exists:
             print("audiomodel: Audio file not found!")
             raise FileNotFoundError
         else:
-            self.signal, self.fs = sf.read(self.file_path)
+            self.signal, self.fs = sf.read(self.audio)
             print(f"audiomodel: Sampling rate: {self.fs}")
+        
 
+    def _get_audio_details(self):
         # Get number of channels
         try:
             self.num_channels = self.signal.shape[1]
         except IndexError:
             self.num_channels = 1
         self.channels = np.array(range(1, self.num_channels+1))
-        print(f"audiomodel: Number of channels in file: {self.num_channels}")
+        print(f"audiomodel: Number of channels in signal: {self.num_channels}")
 
         # Assign audio file attributes
         self.dur = len(self.signal) / self.fs
@@ -72,7 +97,6 @@ class Audio:
         # Get data type
         self.data_type = self.signal.dtype
         print(f"audiomodel: Data type: {self.data_type}")
-
         print("audiomodel: Done")
 
 

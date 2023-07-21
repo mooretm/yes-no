@@ -60,7 +60,7 @@ class Application(tk.Tk):
         #############
         self.NAME = 'Yes-No Task Controller'
         self.VERSION = '0.0.0'
-        self.EDITED = 'July 20, 2023'
+        self.EDITED = 'July 21, 2023'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -134,7 +134,6 @@ class Application(tk.Tk):
 
             # Calibration dialog commands
             '<<CalPlay>>': lambda _: self.play_calibration_file(),
-            #'<<CalStop>>': lambda _: self.stop_calibration_file(),
             '<<CalStop>>': lambda _: self.stop_audio(),
             '<<CalibrationSubmit>>': lambda _: self._calc_offset(),
 
@@ -222,19 +221,28 @@ class Application(tk.Tk):
     ###################
     # Audio Functions #
     ###################
-    def present_audio(self, audio_path, pres_level):
+    def present_audio(self, audio, pres_level, **kwargs):
         # Load audio
-        self._create_audio_object(audio_path)
-
+        try:
+            self._create_audio_object(audio, **kwargs)
+        except audio_exceptions.InvalidAudioType as e:
+            messagebox.showerror(
+                title="Invalid Audio Type",
+                message="The audio type is invalid!",
+                detail=f"{e} Please provide a Path or ndarray object."
+            )
+            return
+        
         # Play audio
         self._play(pres_level)
 
 
-    def _create_audio_object(self, audio_path):
+    def _create_audio_object(self, audio, **kwargs):
         # Create audio object
         try:
             self.a = audiomodel.Audio(
-                Path(audio_path)
+                audio=audio,
+                **kwargs
             )
         except FileNotFoundError:
             messagebox.showerror(
@@ -243,7 +251,9 @@ class Application(tk.Tk):
                 detail="Go to File>Session to specify a valid audio path."
             )
             self._show_session_dialog()
-            #return
+            return
+        except audio_exceptions.InvalidAudioType:
+            raise
 
 
     def _play(self, pres_level):
@@ -349,10 +359,43 @@ class Application(tk.Tk):
 
         # Present trial
         self.present_audio(
-            audio_path=self.matrix.iloc[self.trial_counter, 0],
+            audio=self.matrix.iloc[self.trial_counter, 0],
             pres_level=self.sessionpars['adjusted_level_dB'].get()
         )
 
+
+    #     # TESTING ADDED PURE TONE FUNCTIONALITY WITH AUDIOMODEL #
+    #     # Create signal
+    #     t, sig = self.mkTone(1000, 2, phi=0, fs=48000)
+    #     sig = sig * 0.7
+
+    #     # Present audio
+    #     self.present_audio(
+    #         audio=sig,
+    #         pres_level=self.sessionpars['adjusted_level_dB'].get(),
+    #         sampling_rate=48000
+    #     )
+
+    # def mkTone(self, freq, dur, phi=0, fs=48000):
+    #     """ Create a pure tone. Returns the signal 
+    #         AND the time base. 
+        
+    #         FREQ: frequency in Hz
+    #         DUR: duration in SECONDS
+    #         PHI: phase in DEGREES
+    #         FS: sampling rate
+
+    #         EXAMPLE: [t, sig] = (500,0.2,0,48000)
+
+    #     Written by: Travis M. Moore
+    #     Last edited: 1/12/2022
+    #     """
+    #     import numpy as np
+    #     phi = np.deg2rad(phi) # to radians
+    #     t = np.arange(0,dur,1/fs) # time base
+    #     sig = np.sin(2*np.pi*freq*t+phi)
+    #     return [t, sig]
+    
 
     ########################
     # Main View Functions #
@@ -403,7 +446,7 @@ class Application(tk.Tk):
             self._calc_level(self.matrix.iloc[self.trial_counter, 1])
 
             self.present_audio(
-                audio_path=self.matrix.iloc[self.trial_counter, 0],
+                audio=self.matrix.iloc[self.trial_counter, 0],
                 pres_level=self.sessionpars['adjusted_level_dB'].get()
             )
         else:
@@ -521,22 +564,11 @@ class Application(tk.Tk):
         """
         # Get calibration file
         self.calmodel.get_cal_file()
-
         # Present calibration signal
-        self.present_audio(audio_path=self.calmodel.cal_file, 
+        self.present_audio(
+            audio=self.calmodel.cal_file, 
             pres_level=self.sessionpars['cal_level_dB'].get()
-        )        
-        
-        # Play calibration file
-        #self.calmodel.play_cal()
-
-
-    # def stop_calibration_file(self):
-    #     """ Stop playback of calibration file
-    #     """
-    #     # Stop calibration playback
-    #     #self.calmodel.stop_cal()
-    #     self.stop_audio()
+        )
 
 
     def _calc_offset(self):
@@ -553,7 +585,6 @@ class Application(tk.Tk):
         """
         # Calculate new presentation level
         self.calmodel.calc_level(desired_spl)
-
         # Save level - this must be called here!
         self._save_sessionpars()
 

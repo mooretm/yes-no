@@ -27,22 +27,19 @@ class SessionParsModel:
         # Stimulus variables
         'audio_files_dir': {'type': 'str', 'value': 'Please select a folder'},
         'matrix_file_path': {'type': 'str', 'value': 'Please select a file'},
-        
+
         # Audio device variables
         'audio_device': {'type': 'int', 'value': 999},
         'channel_routing': {'type': 'str', 'value': '1'},
 
         # Calibration variables
         'cal_file': {'type': 'str', 'value': 'cal_stim.wav'},
-        #'cal_scaling_factor': {'type': 'float', 'value': -30.0},
         'cal_level_dB': {'type': 'float', 'value': -30.0},
         'slm_reading': {'type': 'float', 'value': 70.0},
         'slm_offset': {'type': 'float', 'value': 100.0},
 
         # Presentation level variables
-        #'scaling_factor': {'type': 'float', 'value': -25.0},
         'adjusted_level_dB': {'type': 'float', 'value': -25.0},
-        #'db_level': {'type': 'float', 'value': 75},
         'desired_level_dB': {'type': 'float', 'value': 75},
 
         # Version control variables
@@ -63,6 +60,8 @@ class SessionParsModel:
         # in user's home directory
         directory = Path.home() / self._app_info['name']
         if not os.path.exists(directory):
+            print("sessionmodel: No config file directory found " +
+                  "- creating it")
             os.makedirs(directory)
 
         # Path to file

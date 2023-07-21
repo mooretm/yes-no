@@ -4,6 +4,11 @@
     Last edited: July 18, 2023
 """
 
+
+class Clipping(Exception):
+    """ Audio clipping has occurred """
+
+
 class InvalidAudioDevice(Exception):
     """ Invalid audio device """
 
@@ -29,5 +34,13 @@ class InvalidRouting(Exception):
         return f'Audio Exception: Audio has {self.channels} channel(s), but routing of {self.routing}.'
 
 
-class Clipping(Exception):
-    """ Audio clipping has occurred """
+class InvalidAudioType(Exception):
+    """ Invalid audio type """
+
+    def __init__(self, audio_type, *args):
+        super().__init__(args)
+        self.audio_type = audio_type
+
+
+    def __str__(self):
+        return f'Audio Exception: Audio of type {self.audio_type} is not a valid audio type.'
