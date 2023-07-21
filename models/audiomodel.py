@@ -33,8 +33,13 @@ class Audio:
         """ Read audio file and generate info.
             file_path: a Path object from pathlib
         """
-        print(f"\naudiomodel: Attempting to load " + 
-              f"{os.path.basename(file_path)}...")
+        self.msg = "Begin Audio Event"
+        print('')
+        print('*' * len(self.msg))
+        print(self.msg)
+        print('*' * len(self.msg))
+
+        print(f"audiomodel: Loading {os.path.basename(file_path)}...")
         
         # Parse file path
         self.directory = os.path.split(file_path)[0]
@@ -48,7 +53,6 @@ class Audio:
             raise FileNotFoundError
         else:
             self.signal, self.fs = sf.read(self.file_path)
-            print("audiomodel: Found!")
             print(f"audiomodel: Sampling rate: {self.fs}")
 
         # Get number of channels
@@ -69,6 +73,8 @@ class Audio:
         self.data_type = self.signal.dtype
         print(f"audiomodel: Data type: {self.data_type}")
 
+        print("audiomodel: Done")
+
 
     def stop(self):
         """ Stop audio presentation.
@@ -85,13 +91,14 @@ class Audio:
         self.device_id = device_id
         self.routing = routing
 
+        print("\naudiomodel: Preparing for playback...")
+
         # Create a temporary audio file to modify
         self.temp = self.signal.copy()
         self.temp = self.temp.astype(np.float32)
         print(f"audiomodel: Data type converted to {self.temp.dtype}")
 
         # Assign default sounddevice settings
-        print("\naudiomodel: Preparing audio...")
         try:
             self._set_defaults()
         except sd.PortAudioError:
@@ -116,9 +123,10 @@ class Audio:
         self._check_channels_and_routing()
 
         # Present audio
-        print("audiomodel: Attempting to present audio...")
+        print("audiomodel: Attempting to present audio")
         sd.play(self.temp, mapping=self.routing)
         print("audiomodel: Done")
+        print('*' * len(self.msg))
 
 
     #####################
@@ -152,7 +160,8 @@ class Audio:
             print("audiomodel: Dropping " +
                 f"{self.num_channels - self.num_outputs} audio file channels")
             
-            # Update audio file and channel routing
+            # Update audio file and channel routing dimensions to 
+            # match number of available audio device outputs
             self.temp = self.temp[:, 0:self.num_outputs]
             self.routing = self.routing[:self.temp.shape[1]]
         
@@ -164,7 +173,7 @@ class Audio:
         """
         if self.level == None:
             # Normalize if no level is provided
-            print("audiomodel: No level provided, normalizing...")
+            print("audiomodel: No level provided; normalizing to +/-1")
             if self.num_channels > 1:
                 for chan in range(0, self.num_channels):
                     # Remove DC offset
@@ -173,8 +182,6 @@ class Audio:
                     self.temp[:, chan] = self.temp[:, chan] / np.max(np.abs(self.temp[:, chan]))
                     # account for num channels
                     self.temp[:, chan] = self.temp[:, chan] / self.num_channels 
-                    #print(f"\nMax of signal: {np.max(np.abs(self.signal[:, chan]))}")
-                    #print(f"Max of temp: {np.max(np.abs(temp[:, chan]))}")
             elif self.num_channels == 1:
                 # Remove DC offset
                 self.temp = self.temp - np.mean(self.temp)
@@ -185,6 +192,8 @@ class Audio:
         else:
             # Convert level in dB to magnitude
             mag = self.db2mag(self.level)
+            print(f"audiomodel: Adjusted Level (dB): {self.level}")
+            print(f"audiomodel: Multiplying signal by: {np.round(mag,2)}")
             # Apply scaling factor to self.temp
             self.temp = self.temp * mag
 

@@ -15,8 +15,8 @@ class MainMenu(tk.Menu):
             root = self.master.winfo_toplevel()
             root.event_generate(sequence)
         return callback
-    
-    
+
+
     def _bind_accelerators(self):
         #self.bind_all('<space>', self._event('<<PlaybackStart>>'))
         #self.bind_all('<Control-c>', self._event('<<PlaybackStop>>'))
@@ -26,29 +26,29 @@ class MainMenu(tk.Menu):
     def __init__(self, parent, _app_info, **kwargs):
         super().__init__(parent, **kwargs)
 
-        # Instantiate
+        # Assign variables
         self._app_info = _app_info
 
         #############
         # File Menu #
         #############
-        file_menu = tk.Menu(self, tearoff=False)
-        file_menu.add_command(
+        self.file_menu = tk.Menu(self, tearoff=False)
+        self.file_menu.add_command(
             label="Session Info...",
             command=self._event('<<FileSession>>')
         )
-        file_menu.add_separator()
-        file_menu.add_command(
+        self.file_menu.add_separator()
+        self.file_menu.add_command(
             label="Start Task",
             command=self._event('<<FileStart>>'),
         )
-        file_menu.add_separator()
-        file_menu.add_command(
+        self.file_menu.add_separator()
+        self.file_menu.add_command(
             label="Quit",
             command=self._event('<<FileQuit>>'),
             accelerator='Ctrl+Q'
         )
-        self.add_cascade(label='File', menu=file_menu)
+        self.add_cascade(label='File', menu=self.file_menu)
 
 
         ############## 

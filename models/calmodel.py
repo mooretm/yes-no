@@ -1,5 +1,5 @@
 """ Class for loading calibration file, determining calibration 
-    offset, and calculating presentation level.
+    offset, and calculating adjusted presentation level.
 
     Written by: Travis M. Moore
 """
@@ -11,7 +11,6 @@
 import os
 
 # Import custom modules
-from models import audiomodel
 from functions import general
 
 
@@ -45,11 +44,11 @@ class CalModel:
         """
         # Calculate SLM offset
         print("\ncalmodel: Calculating new presentation level...")
-        slm_offset = self.sessionpars['slm_reading'].get() - self.sessionpars['cal_scaling_factor'].get()
+        slm_offset = self.sessionpars['slm_reading'].get() - self.sessionpars['cal_level_dB'].get()
         self.sessionpars['slm_offset'].set(slm_offset)
         # Provide console feedback
         print(f"calmodel: Starting level (dB FS): " +
-              f"{self.sessionpars['cal_scaling_factor'].get()}")
+              f"{self.sessionpars['cal_level_dB'].get()}")
         print(f"calmodel: SLM reading (dB): " +
               f"{self.sessionpars['slm_reading'].get()}")
         print(f"calmodel: SLM offset: {self.sessionpars['slm_offset'].get()}")
@@ -58,47 +57,16 @@ class CalModel:
         # This must happen in controller using: self._save_sessionpars()
 
 
-    def calc_level(self, desired_spl):
+    def calc_level(self, desired_level_dB):
         # Calculate presentation level
-        self.sessionpars['db_level'].set(desired_spl)
-        scaled_level = desired_spl - self.sessionpars['slm_offset'].get()
-        self.sessionpars['scaling_factor'].set(scaled_level)
+        self.sessionpars['desired_level_dB'].set(desired_level_dB)
+        scaled_level = desired_level_dB - self.sessionpars['slm_offset'].get()
+        self.sessionpars['adjusted_level_dB'].set(scaled_level)
         print(f"\ncalmodel: Desired level in dB: " +
-              f"{self.sessionpars['db_level'].get()}")
-        print(f"calmodel: Offset: {self.sessionpars['slm_offset'].get()}")
-        print(f"calmodel: Scaling factor: " +
-            f"{self.sessionpars['scaling_factor'].get()}")
+              f"{self.sessionpars['desired_level_dB'].get()}")
+        print(f"calmodel: SLM offset: {self.sessionpars['slm_offset'].get()}")
+        print(f"calmodel: Adjusted level (dB): " +
+            f"{self.sessionpars['adjusted_level_dB'].get()}")
 
         # Calculated level not yet saved! 
         # This must happen in controller using: self._save_sessionpars()
-
-
-    def play_cal(self):
-        """ Present calibration file.
-        """
-        # Convert routing variable
-        routing = self._format_routing(
-            self.sessionpars['channel_routing'].get())
-
-        self.cal = audiomodel.Audio(file_path=self.cal_file)
-        self.cal.play(
-            level=self.sessionpars['cal_scaling_factor'].get(),
-            device_id=self.sessionpars['audio_device'].get(),
-            routing=routing
-        )
-
-
-    def _format_routing(self, routing):
-        """ Convert space-separated string to list of ints.
-        """
-        routing = routing.split()
-        routing = [int(x) for x in routing]
-
-        return routing
-
-
-    def stop_cal(self):
-        try:
-            self.cal.stop()
-        except AttributeError:
-            print("calmodel: No calibration stimulus found!")

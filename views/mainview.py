@@ -69,11 +69,11 @@ class MainFrame(ttk.Frame):
         
         # ttk.Button(frm_buttons, text="Yes", command=self._on_yes, 
         #     style='Big.TButton', takefocus=0).grid(row=5, column=5, padx=10)
-        self.parent.bind('1', lambda event: self._on_yes())
+        #self.parent.bind('1', lambda event: self._on_yes())
 
         # ttk.Button(frm_buttons, text="No", command=self._on_no,
         #     style='Big.TButton', takefocus=0).grid(row=5, column=10, padx=10)
-        self.parent.bind('2', lambda event: self._on_no())
+        #self.parent.bind('2', lambda event: self._on_no())
 
         # SEPARATOR #
 

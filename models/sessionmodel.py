@@ -21,7 +21,6 @@ class SessionParsModel:
         # Session variables
         'subject': {'type': 'str', 'value': '999'},
         'condition': {'type': 'str', 'value': 'TEST'},
-        'pres_level': {'type': 'float', 'value': 65.0},
         'randomize': {'type': 'int', 'value': 0},
         'repetitions': {'type': 'int', 'value': 1},
 
@@ -34,14 +33,17 @@ class SessionParsModel:
         'channel_routing': {'type': 'str', 'value': '1'},
 
         # Calibration variables
-        'cal_scaling_factor': {'type': 'float', 'value': -30.0},
+        'cal_file': {'type': 'str', 'value': 'cal_stim.wav'},
+        #'cal_scaling_factor': {'type': 'float', 'value': -30.0},
+        'cal_level_dB': {'type': 'float', 'value': -30.0},
         'slm_reading': {'type': 'float', 'value': 70.0},
         'slm_offset': {'type': 'float', 'value': 100.0},
-        'cal_file': {'type': 'str', 'value': 'cal_stim.wav'},
 
         # Presentation level variables
-        'scaling_factor': {'type': 'float', 'value': -25.0},
-        'db_level': {'type': 'float', 'value': 75},
+        #'scaling_factor': {'type': 'float', 'value': -25.0},
+        'adjusted_level_dB': {'type': 'float', 'value': -25.0},
+        #'db_level': {'type': 'float', 'value': 75},
+        'desired_level_dB': {'type': 'float', 'value': 75},
 
         # Version control variables
         'config_file_status': {'type': 'int', 'value': 0},
@@ -55,7 +57,6 @@ class SessionParsModel:
         self._app_info = _app_info
 
         # Create session parameters file name
-        #filename = _app_info['name'] + '.json'
         filename = 'config.json'
 
         # Create a folder to store the session parameters file
@@ -105,7 +106,7 @@ class SessionParsModel:
         """ Save current session parameters to file 
         """
         # Write to JSON file
-        print("sessionmodel: Writing session pars from model to file...")
+        #print("sessionmodel: Writing session pars from model to file...")
         with open(self.filepath, 'w') as fh:
             json.dump(self.fields, fh)
 
@@ -113,8 +114,8 @@ class SessionParsModel:
     def set(self, key, value):
         """ Set a variable value.
         """
-        print("sessionmodel: Setting sessionpars model " +
-            "fields with running vals...")
+        #print("sessionmodel: Setting sessionpars model " +
+        #    "fields with running vals...")
         if (
             key in self.fields and 
             type(value).__name__ == self.fields[key]['type']

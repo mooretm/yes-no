@@ -10,9 +10,6 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 
-# Import system packages
-import os
-
 # Import custom modules
 from functions import general
 

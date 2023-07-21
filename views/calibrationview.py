@@ -9,9 +9,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-# Import system packages
-import os
-
 # Import custom modules
 from functions import general
 
@@ -127,7 +124,7 @@ class CalibrationDialog(tk.Toplevel):
         ttk.Label(lfrm_playback, text="Level (dB):").grid(
             column=5, row=5, sticky='e', **options_small)
         ent_slm = ttk.Entry(lfrm_playback, 
-            textvariable=self.sessionpars['cal_scaling_factor'], width=6)
+            textvariable=self.sessionpars['cal_level_dB'], width=6)
         ent_slm.grid(column=10, row=5, sticky='w', **options_small)
  
         # Play calibration stimulus

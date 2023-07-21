@@ -14,6 +14,7 @@
 ###########
 # Import GUI packages
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 
 # Import system packages
@@ -37,6 +38,7 @@ from models import versionmodel
 from models import audiomodel
 from models import calmodel
 from models import csvmodel
+from models import stimulusmodel
 # View imports
 from views import mainview
 from views import sessionview
@@ -58,7 +60,7 @@ class Application(tk.Tk):
         #############
         self.NAME = 'Yes-No Task Controller'
         self.VERSION = '0.0.0'
-        self.EDITED = 'July 19, 2023'
+        self.EDITED = 'July 20, 2023'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -97,14 +99,21 @@ class Application(tk.Tk):
         self.calmodel = calmodel.CalModel(self.sessionpars)
 
         # Load main view
-        self.grid_columnconfigure(0, weight=1) # center widget
-        self.grid_rowconfigure(0, weight=1) # center widget
+        #self.grid_columnconfigure(0, weight=1) # center widget
+        #self.grid_rowconfigure(0, weight=1) # center widget
         self.main_frame = mainview.MainFrame(self)
-        self.main_frame.grid(row=0, column=0)
+        self.main_frame.grid(row=5, column=5)
+
+        # Trial counter label
+        self.trial_var = tk.StringVar(value="Trial:")
+        ttk.Label(self, textvariable=self.trial_var, 
+            style='Medium.TLabel').grid(row=10, column=5, sticky='w', 
+            padx=20, pady=(0,10))
+
 
         # Load menus
-        menu = mainmenu.MainMenu(self, self._app_info)
-        self.config(menu=menu)
+        self.menu = mainmenu.MainMenu(self, self._app_info)
+        self.config(menu=self.menu)
 
         # Create callback dictionary
         event_callbacks = {
@@ -125,7 +134,8 @@ class Application(tk.Tk):
 
             # Calibration dialog commands
             '<<CalPlay>>': lambda _: self.play_calibration_file(),
-            '<<CalStop>>': lambda _: self.stop_calibration_file(),
+            #'<<CalStop>>': lambda _: self.stop_calibration_file(),
+            '<<CalStop>>': lambda _: self.stop_audio(),
             '<<CalibrationSubmit>>': lambda _: self._calc_offset(),
 
             # Audio dialog commands
@@ -196,6 +206,12 @@ class Application(tk.Tk):
         self.geometry("+%d+%d" % (x, y))
         self.deiconify()
 
+    def _update_trial_label(self):
+        """ Update the trial count label.
+        """
+        self.trial_var.set(f"Trial {self.trial_counter+1} of " + 
+            f"{self.matrix.shape[0]}")
+
 
     def _quit(self):
         """ Exit the application.
@@ -206,14 +222,38 @@ class Application(tk.Tk):
     ###################
     # Audio Functions #
     ###################
-    def _play(self):
+    def present_audio(self, audio_path, pres_level):
+        # Load audio
+        self._create_audio_object(audio_path)
+
+        # Play audio
+        self._play(pres_level)
+
+
+    def _create_audio_object(self, audio_path):
+        # Create audio object
+        try:
+            self.a = audiomodel.Audio(
+                Path(audio_path)
+            )
+        except FileNotFoundError:
+            messagebox.showerror(
+                title="File Not Found",
+                message="Cannot find the audio file!",
+                detail="Go to File>Session to specify a valid audio path."
+            )
+            self._show_session_dialog()
+            #return
+
+
+    def _play(self, pres_level):
         """ Format channel routing, present audio and catch 
             exceptions.
         """
         # Attempt to present audio
         try:
             self.a.play(
-                level=self.sessionpars['scaling_factor'].get(),
+                level=pres_level,
                 device_id=self.sessionpars['audio_device'].get(),
                 routing=self._format_routing(
                     self.sessionpars['channel_routing'].get())
@@ -250,6 +290,13 @@ class Application(tk.Tk):
             self.a.plot_waveform("Clipped Waveform")
 
 
+    def stop_audio(self):
+        try:
+            self.a.stop()
+        except AttributeError:
+            print("\ncontroller: Stop called, but there is no audio object!")
+
+
     def _format_routing(self, routing):
         """ Convert space-separated string to list of ints.
         """
@@ -263,26 +310,48 @@ class Application(tk.Tk):
     # File Menu Funcs #
     ###################
     def start_task(self):
+        """ Create trial counter.
+            Disable "Start Task" from file menu.
+            Bind keys to response functions.
+            Create stimulus model.
+            Present first trial.
+        """
+        # Create trial counter
+        self.trial_counter = 0
 
-        print(f"\ncontroller: Config file status: {self.sessionpars['config_file_status'].get()}")
+        # Disable "Start Task" from File menu
+        self.menu.file_menu.entryconfig('Start Task', state='disabled')
 
-        # Calculate desired level
-        self._calc_level(90)
+        # Bind keys to main_frame response functions
+        self.bind('1', lambda event: self.main_frame._on_yes())
+        self.bind('2', lambda event: self.main_frame._on_no())
 
-        # Create audio object
+        # Create stimulus model
         try:
-            self.a = audiomodel.Audio(Path(r'.\sample_stim.wav'))
+            self.stimmodel = stimulusmodel.StimulusModel(self.sessionpars)
         except FileNotFoundError:
             messagebox.showerror(
                 title="File Not Found",
-                message="Cannot find the audio file!",
-                detail="Go to File>Session to specify a valid audio path."
+                message="Cannot find matrix file!",
+                detail="Go to File>Session to specify a valid matrix file path."
             )
-            self._show_session_dialog()
             return
 
-        # Present audio
-        self._play()
+        self.matrix = self.stimmodel.matrix
+        print('\n', self.matrix)
+
+        # Update trial label
+        self._update_trial_label()
+
+        # Apply offset to desired dB level
+        # (Also update sessionpars)
+        self._calc_level(self.matrix.iloc[self.trial_counter, 1])
+
+        # Present trial
+        self.present_audio(
+            audio_path=self.matrix.iloc[self.trial_counter, 0],
+            pres_level=self.sessionpars['adjusted_level_dB'].get()
+        )
 
 
     ########################
@@ -301,12 +370,18 @@ class Application(tk.Tk):
 
 
     def _on_submit(self):
-        """ Assign response value and save to file.
+        """ Increase trial counter.
+            Assign response value and save to file.
+            Present next trial.
         """
+        # Increase trial counter
+        self.trial_counter += 1
+
+        # Assign response value
         if self.response == 0:
-            print(f"\ncontroller: You answered: no")
+            print(f"\ncontroller: Response: no")
         elif self.response == 1:
-            print(f"\ncontroller: You answered: yes")
+            print(f"\ncontroller: Response: yes")
         else: 
             print("Unrecognized response!")
             messagebox.showerror(
@@ -314,11 +389,35 @@ class Application(tk.Tk):
                 message="The response type is invalid!",
                 detail=f'Response was {self.response}, but expected 0 or 1'
             )
-        
-        self._on_save()
+
+        # Save the trial data
+        self._save_trial_data()
+
+        # Present trial
+        if self.trial_counter < self.matrix.shape[0]:
+            # Update trial label
+            self._update_trial_label()
+
+            # Convert db level to scaling factor
+            # Updates sessionpars
+            self._calc_level(self.matrix.iloc[self.trial_counter, 1])
+
+            self.present_audio(
+                audio_path=self.matrix.iloc[self.trial_counter, 0],
+                pres_level=self.sessionpars['adjusted_level_dB'].get()
+            )
+        else:
+            print("\ncontroller: Task complete! Goodbye!")
+            messagebox.showinfo(
+                title="Task Complete",
+                message="Please let the investigator know you have " +
+                    "finished the task!"
+            )
+            self.destroy()
+            return
 
 
-    def _on_save(self):
+    def _save_trial_data(self):
         """ Select data to save and send to csv model.
         """
         # Get tk variable values
@@ -328,8 +427,8 @@ class Application(tk.Tk):
 
         # Define selected items for writing to file
         save_list = ['subject', 'condition', 'randomize', 'repetitions', 
-            'slm_reading', 'cal_scaling_factor', 'slm_offset', 
-            'scaling_factor', 'db_level']
+            'slm_reading', 'cal_level_dB', 'slm_offset', 'desired_level_dB',
+            'adjusted_level_dB']
         
         # Create new dict with desired items
         try:
@@ -345,7 +444,7 @@ class Application(tk.Tk):
             self.destroy()
             return
 
-        # Save data
+        # Write data to file
         print('controller: Calling save record function...')
         try:
             self.csvmodel.save_record(data)
@@ -392,7 +491,7 @@ class Application(tk.Tk):
     def _save_sessionpars(self, *_):
         """ Save current runtime parameters to file 
         """
-        print("\ncontroller: Calling sessionpar model set and save funcs...")
+        print("\ncontroller: Calling sessionpars model set and save funcs")
         for key, variable in self.sessionpars.items():
             self.sessionpars_model.set(key, variable.get())
             self.sessionpars_model.save()
@@ -423,15 +522,21 @@ class Application(tk.Tk):
         # Get calibration file
         self.calmodel.get_cal_file()
 
+        # Present calibration signal
+        self.present_audio(audio_path=self.calmodel.cal_file, 
+            pres_level=self.sessionpars['cal_level_dB'].get()
+        )        
+        
         # Play calibration file
-        self.calmodel.play_cal()
+        #self.calmodel.play_cal()
 
 
-    def stop_calibration_file(self):
-        """ Stop playback of calibration file
-        """
-        # Stop calibration playback
-        self.calmodel.stop_cal()
+    # def stop_calibration_file(self):
+    #     """ Stop playback of calibration file
+    #     """
+    #     # Stop calibration playback
+    #     #self.calmodel.stop_cal()
+    #     self.stop_audio()
 
 
     def _calc_offset(self):

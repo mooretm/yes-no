@@ -1,5 +1,6 @@
 __pycache__
 Data/
 *.csv
+*.wav
 output/
 venv/
