@@ -59,7 +59,7 @@ class Application(tk.Tk):
         # Constants #
         #############
         self.NAME = 'Yes-No Task Controller'
-        self.VERSION = '0.1.0'
+        self.VERSION = '0.1.1'
         self.EDITED = 'July 31, 2023'
 
         # Create menu settings dictionary
