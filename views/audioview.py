@@ -37,12 +37,18 @@ class AudioDialog(tk.Toplevel):
 
 
     def _draw_widgets(self):
+        #################
+        # Custom Styles #
+        #################
+        self.style = ttk.Style()
+        self.style.configure('Bold.TLabel', font=('TKDefaultFont', 10, 'bold'))
+
+
         ##########
         # Frames #
         ##########
         # Options for label frames
         options = {'padx':10, 'pady':10}
-        options_small = {'padx':2.5, 'pady':2.5}
 
         # Channel routing entry box
         lfrm_routing = ttk.LabelFrame(self, text="Channel Routing")
@@ -66,6 +72,9 @@ class AudioDialog(tk.Toplevel):
         ttk.Entry(lfrm_routing, textvariable=self.routing_var).grid(column=10, row=5)
 
         # Create treeview
+        # Treeview instructions label
+        ttk.Label(self.frm_tree, text="Click on an audio device below to " +
+            "select it.", style='Bold.TLabel').grid(row=5, column=5)
         self.tree = self._create_tree_widget()
 
         # Submit button
@@ -90,12 +99,12 @@ class AudioDialog(tk.Toplevel):
         tree.column('channels_out', width=60, anchor=tk.CENTER)
 
         tree.bind('<<TreeviewSelect>>', self._item_selected)
-        tree.grid(row=0, column=0, sticky=tk.NSEW)
+        tree.grid(row=10, column=5, sticky=tk.NSEW)
 
         # Add a scrollbar
         scrollbar = ttk.Scrollbar(self.frm_tree, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscroll=scrollbar.set)
-        scrollbar.grid(row=0, column=1, sticky='ns')
+        scrollbar.grid(row=10, column=6, sticky='ns')
 
         # Get data
         devices = self._query_audio_devices()

@@ -59,8 +59,8 @@ class Application(tk.Tk):
         # Constants #
         #############
         self.NAME = 'Yes-No Task Controller'
-        self.VERSION = '0.0.0'
-        self.EDITED = 'July 21, 2023'
+        self.VERSION = '0.1.0'
+        self.EDITED = 'July 31, 2023'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -232,7 +232,7 @@ class Application(tk.Tk):
                 detail=f"{e} Please provide a Path or ndarray object."
             )
             return
-        
+
         # Play audio
         self._play(pres_level)
 
@@ -347,8 +347,10 @@ class Application(tk.Tk):
             )
             return
 
+        # Get trial matrix from stimulusmodel
         self.matrix = self.stimmodel.matrix
-        print('\n', self.matrix)
+        print('\ncontroller: Trial matrix')
+        print(self.matrix)
 
         # Update trial label
         self._update_trial_label()
@@ -359,47 +361,14 @@ class Application(tk.Tk):
 
         # Present trial
         self.present_audio(
-            audio=self.matrix.iloc[self.trial_counter, 0],
+            audio=Path(self.matrix.iloc[self.trial_counter, 0]),
             pres_level=self.sessionpars['adjusted_level_dB'].get()
         )
-
-
-    #     # TESTING ADDED PURE TONE FUNCTIONALITY WITH AUDIOMODEL #
-    #     # Create signal
-    #     t, sig = self.mkTone(1000, 2, phi=0, fs=48000)
-    #     sig = sig * 0.7
-
-    #     # Present audio
-    #     self.present_audio(
-    #         audio=sig,
-    #         pres_level=self.sessionpars['adjusted_level_dB'].get(),
-    #         sampling_rate=48000
-    #     )
-
-    # def mkTone(self, freq, dur, phi=0, fs=48000):
-    #     """ Create a pure tone. Returns the signal 
-    #         AND the time base. 
-        
-    #         FREQ: frequency in Hz
-    #         DUR: duration in SECONDS
-    #         PHI: phase in DEGREES
-    #         FS: sampling rate
-
-    #         EXAMPLE: [t, sig] = (500,0.2,0,48000)
-
-    #     Written by: Travis M. Moore
-    #     Last edited: 1/12/2022
-    #     """
-    #     import numpy as np
-    #     phi = np.deg2rad(phi) # to radians
-    #     t = np.arange(0,dur,1/fs) # time base
-    #     sig = np.sin(2*np.pi*freq*t+phi)
-    #     return [t, sig]
     
 
-    ########################
+    #######################
     # Main View Functions #
-    ########################
+    #######################
     def _on_yes(self):
         """ Set response value to 1 (yes).
         """
@@ -417,9 +386,6 @@ class Application(tk.Tk):
             Assign response value and save to file.
             Present next trial.
         """
-        # Increase trial counter
-        self.trial_counter += 1
-
         # Assign response value
         if self.response == 0:
             print(f"\ncontroller: Response: no")
@@ -436,6 +402,9 @@ class Application(tk.Tk):
         # Save the trial data
         self._save_trial_data()
 
+        # Increase trial counter
+        self.trial_counter += 1
+
         # Present trial
         if self.trial_counter < self.matrix.shape[0]:
             # Update trial label
@@ -446,7 +415,7 @@ class Application(tk.Tk):
             self._calc_level(self.matrix.iloc[self.trial_counter, 1])
 
             self.present_audio(
-                audio=self.matrix.iloc[self.trial_counter, 0],
+                audio=Path(self.matrix.iloc[self.trial_counter, 0]),
                 pres_level=self.sessionpars['adjusted_level_dB'].get()
             )
         else:
@@ -462,18 +431,28 @@ class Application(tk.Tk):
 
     def _save_trial_data(self):
         """ Select data to save and send to csv model.
+            This is tricky because I'm using a dictionary to hold all 
+            the data, and the order that values are entered into the 
+            dict matters.
         """
-        # Get tk variable values
+        # Dictionary to hold extracted tk variables (with .get())
         converted = dict()
+
+        # Enter the trial number first so it appears first in the 
+        # output file
+        converted['trial'] = self.trial_counter + 1
+
+        # Get tk variable values and populate dict
         for key in self.sessionpars:
             converted[key] = self.sessionpars[key].get()
 
-        # Define selected items for writing to file
-        save_list = ['subject', 'condition', 'randomize', 'repetitions', 
-            'slm_reading', 'cal_level_dB', 'slm_offset', 'desired_level_dB',
-            'adjusted_level_dB']
-        
-        # Create new dict with desired items
+        # Define selected keys to keep from sessionpars (and the trial 
+        # number) to write to file
+        save_list = ['trial', 'subject', 'condition', 'randomize', 
+            'repetitions', 'slm_reading', 'cal_level_dB', 'slm_offset', 
+            'desired_level_dB', 'adjusted_level_dB']
+
+        # Create new dict with only desired items
         try:
             data = dict((k, converted[k]) for k in save_list)
         except KeyError as e:
@@ -486,6 +465,20 @@ class Application(tk.Tk):
             )
             self.destroy()
             return
+
+        # Add any additional data to be written to file
+        data['expected_resp'] = self.matrix.iloc[self.trial_counter, 2]
+        data['actual_resp'] = self.response
+
+        # Categorize responses as signal detection theory proportions
+        if (data['expected_resp']=='yes') and (data['actual_resp']==1):
+            data['resp_type'] = 'H'
+        elif (data['expected_resp']=='yes') and (data['actual_resp']==0):
+            data['resp_type'] = 'M'
+        elif (data['expected_resp']=='no') and (data['actual_resp']==1):
+            data['resp_type'] = 'FA'
+        elif (data['expected_resp']=='no') and (data['actual_resp']==0):
+            data['resp_type'] = 'CR'
 
         # Write data to file
         print('controller: Calling save record function...')
@@ -566,7 +559,7 @@ class Application(tk.Tk):
         self.calmodel.get_cal_file()
         # Present calibration signal
         self.present_audio(
-            audio=self.calmodel.cal_file, 
+            audio=Path(self.calmodel.cal_file), 
             pres_level=self.sessionpars['cal_level_dB'].get()
         )
 
