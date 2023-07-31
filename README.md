@@ -62,7 +62,7 @@ The Calibration window provides a simple way to calibrate your stimuli using a s
 
 ## Compiling from Source
 ```
-pyinstaller...
+pyinstaller --noconfirm --onefile --windowed --add-data "C:/Users/MooTra/Code/Python/yes-no/assets/cal_stim.wav;." --add-data "C:/Users/MooTra/Code/Python/yes-no/assets/README;README/"  "C:/Users/MooTra/Code/Python/yes-no/controller.py"
 ```
 <br>
 <br>
