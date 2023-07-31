@@ -205,6 +205,7 @@ class Application(tk.Tk):
         self.geometry("+%d+%d" % (x, y))
         self.deiconify()
 
+
     def _update_trial_label(self):
         """ Update the trial count label.
         """
@@ -364,7 +365,7 @@ class Application(tk.Tk):
             audio=Path(self.matrix.iloc[self.trial_counter, 0]),
             pres_level=self.sessionpars['adjusted_level_dB'].get()
         )
-    
+
 
     #######################
     # Main View Functions #
@@ -373,12 +374,14 @@ class Application(tk.Tk):
         """ Set response value to 1 (yes).
         """
         self.response = 1
+        print(f"\ncontroller: Response: yes")
 
 
     def _on_no(self):
         """ Set response value to 0 (no).
         """
         self.response = 0
+        print(f"\ncontroller: Response: no")
 
 
     def _on_submit(self):
@@ -386,26 +389,54 @@ class Application(tk.Tk):
             Assign response value and save to file.
             Present next trial.
         """
-        # Assign response value
-        if self.response == 0:
-            print(f"\ncontroller: Response: no")
-        elif self.response == 1:
-            print(f"\ncontroller: Response: yes")
-        else: 
-            print("Unrecognized response!")
-            messagebox.showerror(
-                title="Invalid Response",
-                message="The response type is invalid!",
-                detail=f'Response was {self.response}, but expected 0 or 1'
+        # Select keys to write to file
+        save_list = ['trial', 'stimulus', 'subject', 'condition', 
+            'randomize', 'repetitions', 'slm_reading', 'cal_level_dB', 
+            'slm_offset', 'desired_level_dB', 'adjusted_level_dB']
+        
+        # Prepare trial data
+        try:
+            self.stimmodel.prep_data(
+                current_trial=self.trial_counter, 
+                response=self.response,
+                save_list=save_list
             )
+        except KeyError as e:
+            messagebox.showerror(
+                title="Undefined Variable",
+                message="Data not saved!",
+                detail=f'{e} is undefined.'
+            )
+            self.destroy()
+            return
 
         # Save the trial data
-        self._save_trial_data()
+        self._save_trial_data(self.stimmodel.trial_data)
 
         # Increase trial counter
         self.trial_counter += 1
 
         # Present trial
+        self.present_trial()
+
+
+    def _save_trial_data(self, data):
+        # Write data to file
+        print('\ncontroller: Calling save record function...')
+        try:
+            self.csvmodel.save_record(data)
+        except PermissionError as e:
+            print(e)
+            messagebox.showerror(
+                title="Access Denied",
+                message="Data not saved! Cannot write to file!",
+                detail=e
+            )
+            self.destroy()
+            return
+
+
+    def present_trial(self):
         if self.trial_counter < self.matrix.shape[0]:
             # Update trial label
             self._update_trial_label()
@@ -424,72 +455,6 @@ class Application(tk.Tk):
                 title="Task Complete",
                 message="Please let the investigator know you have " +
                     "finished the task!"
-            )
-            self.destroy()
-            return
-
-
-    def _save_trial_data(self):
-        """ Select data to save and send to csv model.
-            This is tricky because I'm using a dictionary to hold all 
-            the data, and the order that values are entered into the 
-            dict matters.
-        """
-        # Dictionary to hold extracted tk variables (with .get())
-        converted = dict()
-
-        # Enter the trial number first so it appears first in the 
-        # output file
-        converted['trial'] = self.trial_counter + 1
-
-        # Get tk variable values and populate dict
-        for key in self.sessionpars:
-            converted[key] = self.sessionpars[key].get()
-
-        # Define selected keys to keep from sessionpars (and the trial 
-        # number) to write to file
-        save_list = ['trial', 'subject', 'condition', 'randomize', 
-            'repetitions', 'slm_reading', 'cal_level_dB', 'slm_offset', 
-            'desired_level_dB', 'adjusted_level_dB']
-
-        # Create new dict with only desired items
-        try:
-            data = dict((k, converted[k]) for k in save_list)
-        except KeyError as e:
-            print('\ncontroller: Unexpected variable when attempting ' +
-                  f'to save: {e}')
-            messagebox.showerror(
-                title="Undefined Variable",
-                message="Data not saved!",
-                detail=f'{e} is undefined.'
-            )
-            self.destroy()
-            return
-
-        # Add any additional data to be written to file
-        data['expected_resp'] = self.matrix.iloc[self.trial_counter, 2]
-        data['actual_resp'] = self.response
-
-        # Categorize responses as signal detection theory proportions
-        if (data['expected_resp']=='yes') and (data['actual_resp']==1):
-            data['resp_type'] = 'H'
-        elif (data['expected_resp']=='yes') and (data['actual_resp']==0):
-            data['resp_type'] = 'M'
-        elif (data['expected_resp']=='no') and (data['actual_resp']==1):
-            data['resp_type'] = 'FA'
-        elif (data['expected_resp']=='no') and (data['actual_resp']==0):
-            data['resp_type'] = 'CR'
-
-        # Write data to file
-        print('controller: Calling save record function...')
-        try:
-            self.csvmodel.save_record(data)
-        except PermissionError as e:
-            print(e)
-            messagebox.showerror(
-                title="Access Denied",
-                message="Data not saved! Cannot write to file!",
-                detail=e
             )
             self.destroy()
             return

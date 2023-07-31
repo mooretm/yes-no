@@ -22,11 +22,13 @@ class StimulusModel:
         #####################
         # Sequence of Funcs #
         #####################
-        # Import matrix file and add full audio paths
+        # Import matrix file
         self._load_matrix()
+
+        # Add full audio paths to matrix file df
         self._add_full_audio_paths()
 
-        # Make trial repetitions
+        # Create trial repetitions
         self._do_reps()
 
         # If specified, randomize trials
@@ -100,3 +102,60 @@ class StimulusModel:
 
         # Reset index
         self.matrix.reset_index(drop=True, inplace=True)
+
+
+    def prep_data(self, current_trial, response, save_list):
+        """ Select data to save and send to csv model.
+            This is tricky because I'm using a dictionary to hold all 
+            the data, and the order that values are entered into the 
+            dict matters.
+        """
+        # Avoid conflicts and save memory by deleting previous trial data
+        try:
+            del self.trial_data
+        except AttributeError:
+            pass
+
+        # Dictionary to hold extracted tk variables (with .get())
+        temp = dict()
+
+        # Enter the trial number first so it appears first in the 
+        # output file
+        temp['trial'] = current_trial + 1
+
+        # Add audio stimulus .wav file name
+        temp['stimulus'] = os.path.basename(
+            self.matrix.iloc[current_trial,0])
+
+        # Get tk variable values and populate temp dict
+        for key in self.sessionpars:
+            temp[key] = self.sessionpars[key].get()
+
+        # Create new dict with only desired items
+        try:
+            self.trial_data = dict((k, temp[k]) for k in save_list)
+        except KeyError as e:
+            print('\nstimulusmodel: Unexpected variable when attempting ' +
+                  f'to save: {e}')
+            raise
+
+        # Add additional data to be written to file
+        try:
+            # Get expected response from matrix file
+            self.trial_data['expected_resp'] = self.matrix.iloc[current_trial, 2]
+            # Categorize responses as signal detection theory proportions
+            if (self.trial_data['expected_resp']=='yes') and (response==1):
+                self.trial_data['resp_type'] = 'H'
+            elif (self.trial_data['expected_resp']=='yes') and (response==0):
+                self.trial_data['resp_type'] = 'M'
+            elif (self.trial_data['expected_resp']=='no') and (response==1):
+                self.trial_data['resp_type'] = 'FA'
+            elif (self.trial_data['expected_resp']=='no') and (response==0):
+                self.trial_data['resp_type'] = 'CR'
+        except IndexError:
+            print("\nstimulusmodel: No expected response column in " +
+                  "matrix file.")
+            print("stimulusmodel: Unable to calculate SDT proportions.")
+
+        # Add actual response
+        self.trial_data['actual_resp'] = response

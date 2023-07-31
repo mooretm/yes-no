@@ -20,26 +20,32 @@ class CSVModel:
     def __init__(self, sessionpars):
         self.sessionpars = sessionpars
 
+        # Define name of data directory
+        self.data_directory = "Data"
+
         # Generate date stamp
         self.datestamp = datetime.now().strftime("%Y_%b_%d_%H%M")
 
-    
-    def save_record(self, data):
-        """ Save a dictionary of data to .csv file 
+        # Check for existing data directory
+        self._check_dir()
+
+
+    def _check_dir(self):
+        """ Check for existing data folder.
         """
-        # Check for existing data folder
-        data_directory = "Data"
-        data_dir_exists = os.access(data_directory, os.F_OK)
+        data_dir_exists = os.access(self.data_directory, os.F_OK)
         if not data_dir_exists:
-            print(f"\ncsvmodel: {data_directory} directory not found! " + 
+            print(f"\ncsvmodel: {self.data_directory} directory not found! " +
                 "Creating it...")
-            os.mkdir(data_directory)
-            print(f"csvmodel: Successfully created {data_directory} " +
+            os.mkdir(self.data_directory)
+            print(f"csvmodel: Successfully created {self.data_directory} " +
                   "directory!")
-        
-        # Create file name and path
-        filename = f"{self.sessionpars['subject'].get()}_{self.sessionpars['condition'].get()}_{self.datestamp}.csv"
-        self.file = Path(os.path.join(data_directory, filename))
+
+
+    def _create_file(self, subject, condition):
+        # Create save file path
+        filename = f"{subject}_{condition}_{self.datestamp}.csv"
+        self.file = Path(os.path.join(self.data_directory, filename))
 
         # Check for write access to store csv
         file_exists = os.access(self.file, os.F_OK)
@@ -49,9 +55,16 @@ class CSVModel:
             (not file_exists and not parent_writable) or
             (file_exists and not file_writable)
         ):
-            msg = f"\ncsvmodel: Permission denied accessing file: {filename}"
+            msg = f"\ncsvmodel: Permission denied accessing file: " + \
+                f"{os.path.basename(filename)}"
             raise PermissionError(msg)
 
+
+    def save_record(self, data):
+        """ Save a dictionary of data to .csv file 
+        """
+        self._create_file(data['subject'], data['condition'])
+        
         # Write file
         newfile = not self.file.exists()
         with open(self.file, 'a', newline='') as fh:
