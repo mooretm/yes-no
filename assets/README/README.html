@@ -1,18 +1,17 @@
-<h1><strong>Yes/No Task Controller</strong></h1>
+<h1><strong>Yes-No FBC DiQ</strong></h1>
 <ul>
 <li>Written by: <strong>Travis M. Moore</strong></li>
-<li>Latest version: <strong>Version 0.0.0</strong></li>
+<li>Latest version: <strong>Version 0.1.0</strong></li>
 <li>Created: <strong>July 14, 2023</strong></li>
-<li>Last edited: <strong>July 31, 2023</strong>
+<li>Last edited: <strong>August 23, 2023</strong>
 <br>
 <br></li>
 </ul>
 <hr />
-<h2>Description</h2>
-<p>This controller is a simple yes/no presenter; it is not adaptive. Responses can be collected using a numberpad and/or on-screen buttons. Responses are categorized as signal detection proportions (i.e., hits, misses, false alarms, correct rejections) to aid in data analysis.
+<h1>Description</h1>
+<p>This controller is a simple yes/no presenter; it is not adaptive. Responses can be collected using a numberpad. If a data key is provided in the matrix file, responses are categorized as signal detection proportions (i.e., hits, misses, false alarms, correct rejections). If no data key is provided in the matrix file, a count of responses per stimulus is returned. 
 <br>
 <br></p>
-<hr />
 <h2>Getting Started</h2>
 <h3>Dependencies</h3>
 <ul>
@@ -25,18 +24,66 @@
 </ul>
 <h3>First Use</h3>
 <ul>
-<li>Double-click to start the application for the first time.
+<li>Double-click to start the application for the first time.</li>
+<li>Navigate to <code>File&gt;Session Info</code> to provide:<ul>
+<li>A directory of audio files (.wav only)</li>
+<li>A <a href="#matrix-file">matrix file</a>
 <br>
 <br></li>
 </ul>
+</li>
+</ul>
 <hr />
-<h2>Tools Menu</h2>
-<h3>Audio Settings</h3>
+<h1>Interface</h1>
+<p>The Yes-No controller is easy to use. After providing <a href="#session-info">session information</a> and <a href="#starting-task">starting the task</a>, the first audio file will be presented. Afterwards, the subject will have unlimited time to respond using a numberpad, where 1 = "yes" and 2 = "no." Subjects can toggle between yes and no, and only the currently selected option will be recorded when the "Submit" button or Enter key is pressed.</p>
+<p>Upon submitting a response, the next audio file will automatically be presented. </p>
+<p>The trial counter will display the current trial number, as well as the total number of trials. </p>
+<p><img src="main_window.png" alt="Main Window" width="300"/>
+<br>
+<br></p>
+<hr />
+<h1>File Menu</h1>
+<h2>Session Info <a name="session-info"></a></h2>
+<p>Opens a new window to specify parameters for the session. </p>
+<p><img src="session_window.png" alt="Session Information Window" width="400"/></p>
+<h3>Session Information</h3>
+<ul>
+<li>Subject: Subject identifier. Can be string, numeric, or alphanumeric.</li>
+<li>Condition: A unique name for the current condition. If necessary, add additional information using underscores. For example, <code>quiet_aided</code>. </li>
+</ul>
+<h3>Stimulus Options</h3>
+<ul>
+<li>Randomize: Checking this option will randomize the presentation order of the stimuli provided in the matrix file. Unchecking this option will present the stimuli exactly as entered in the matrix file. 
+-Presentation(s): The number of times to present the stimuli provided in the matrix file. A minimum of <code>1</code> must be entered. </li>
+</ul>
+<h3>Audio File Directory</h3>
+<p>Use the "Browse" button to navigate to the directory containing all audio files. Files must be in .wav format. </p>
+<h3>Matrix File Path <a name="matrix-file"></a></h3>
+<p>Use the "Browse" button to navigate to your matrix file. Your matrix file should contain all the stimuli you would like to present for a given session, as well as the presentation level for each stimulus. The matrix file must be organized as pictured below, including the header names. </p>
+<p>There are two types of matrix files. First, you can simply provide the stimuli and presentation levels. Doing so will result in data analysis that counts the number of "Yes" responses for each stimulus. </p>
+<p><img src="matrix_no_key.png" alt="Matrix File Without Data Key" width="300"/></p>
+<p>Second, you can provide an additional column containing the expected response for each stimulus (see below). Providing a data key column allows for the calculation of signal detection proportions (i.e., hits, misses, false alarms, and correct rejections). </p>
+<p><img src="matrix_with_key.png" alt="Matrix File With Data Key" width="400"/>
+<br>
+<br></p>
+<h2>Start Task <a name="starting-task"></a></h2>
+<p>Navigating to <code>File&gt;Start Task</code> begins the yes/no task. Make sure to specify the session parameters by navigating to <code>File&gt;Session Info</code> before beginning.
+<br>
+<br></p>
+<h2>Quit</h2>
+<p>Closes the application. Any data collected prior to quitting will be saved. 
+<br>
+<br></p>
+<hr />
+<h1>Tools Menu</h1>
+<h2>Audio Settings</h2>
 <p>The Audio Settings window allows you to select an audio device and assign speakers for playback. </p>
 <p><b>Device Selection.</b> The Audio Settings window displays available audio devices in a table (see lower part of image below). Simply click to choose the desired device. Your selection will be highlighted in blue. </p>
 <p><b>Speaker Assignment.</b> To assign a speaker for playback, enter the speaker/channel number in the entry box (see upper part of image below). Note that you must provide a speaker for each channel in the audio file. For example, if your stimulus has eight channels, you must provide a list of eight speakers. Separate numbers with spaces when providing a list of speakers. For example: <code>1 2 3 4 5 6 7 8</code>.</p>
-<p><img src="audio_settings.png" alt="Audio Settings Window" width="500"/></p>
-<h3>Calibration</h3>
+<p><img src="audio_settings.png" alt="Audio Settings Window" width="500"/>
+<br>
+<br></p>
+<h2>Calibration</h2>
 <p>The Calibration window provides a simple way to calibrate your stimuli using a sound level meter (SLM). </p>
 <p><b>Calibration Stimulus.</b> You can choose to use the built-in white noise, or provide a custom file for the calibration signal (top group in image below).</p>
 <p><b>Playback Controls.</b> Use the "Level (dB)" entry box to adjust the playback level in dB FS (middle group in image below). The "Play" and "Stop" buttons allow you to start and stop the audio playback.</p>
@@ -45,12 +92,28 @@
 <br>
 <br></p>
 <hr />
-<h2>Compiling from Source</h2>
+<h1>Data Menu</h1>
+<h2>Categorize Data</h2>
+<p>Opens a system file browser where you can navigate to the directory containing output from this application. Once the directory has been provided, summary data specifying the number and type of responses to each stimulus will be generated. Specifically, <strong>the number of "Yes" responses are counted for each stimulus.</strong> </p>
+<p>Data are returned as a plot, as well as three .csv files stored in a directory called <code>Results</code>.</p>
+<h3>Plot</h3>
+<p>The title of the plot contains the number of "Yes" responses possible (i.e., the number of presentations of a given stimulus). </p>
+<p><img src="category_plot.png" alt="Category Plot Image" width="400"/></p>
+<h3>CSV Files</h3>
+<ol>
+<li>all_responses.csv: contains response counts for all stimuli.</li>
+<li>chirp_detected.csv: contains a list of stimuli where all responses were "yes".</li>
+<li>chirp_not_detected.csv: contains a list of stimuli where all responses were "no". 
+<br>
+<br></li>
+</ol>
+<hr />
+<h1>Compiling from Source</h1>
 <p><code>pyinstaller --noconfirm --onefile --windowed --add-data "C:/Users/MooTra/Code/Python/yes-no/assets/cal_stim.wav;." --add-data "C:/Users/MooTra/Code/Python/yes-no/assets/README;README/"  "C:/Users/MooTra/Code/Python/yes-no/controller.py"</code>
 <br>
 <br></p>
 <hr />
-<h2>Contact</h2>
+<h1>Contact</h1>
 <p>Please use the contact information below to submit bug reports, feature requests and any other feedback.</p>
 <ul>
 <li>Travis M. Moore: travis_moore@starkey.com</li>

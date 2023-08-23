@@ -1,5 +1,6 @@
 __pycache__
 Data/
+Results/
 Sample_Stimuli/
 *.csv
 *.wav

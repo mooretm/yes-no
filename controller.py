@@ -16,6 +16,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 
 # Import system packages
 import os
@@ -39,6 +40,7 @@ from models import audiomodel
 from models import calmodel
 from models import csvmodel
 from models import stimulusmodel
+from models import analysismodel
 # View imports
 from views import mainview
 from views import sessionview
@@ -58,9 +60,10 @@ class Application(tk.Tk):
         #############
         # Constants #
         #############
-        self.NAME = 'Yes-No Task Controller'
-        self.VERSION = '0.1.1'
-        self.EDITED = 'July 31, 2023'
+        #self.NAME = 'Yes-No Task Controller'
+        self.NAME = 'Yes-No FBC DiQ'
+        self.VERSION = '0.1.0'
+        self.EDITED = 'August 23, 2023'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -125,6 +128,9 @@ class Application(tk.Tk):
             # Tools menu
             '<<ToolsAudioSettings>>': lambda _: self._show_audio_dialog(),
             '<<ToolsCalibration>>': lambda _: self._show_calibration_dialog(),
+
+            # Data menu
+            '<<DataCategorize>>': lambda _: self._categorize_data(),
 
             # Help menu
             '<<Help>>': lambda _: self._show_help(),
@@ -507,11 +513,22 @@ class Application(tk.Tk):
         print("\ncontroller: Calling audio dialog...")
         audioview.AudioDialog(self, self.sessionpars)
 
+
     def _show_calibration_dialog(self):
         """ Display the calibration dialog window
         """
         print("\ncontroller: Calling calibration dialog...")
         calibrationview.CalibrationDialog(self, self.sessionpars)
+
+
+    def _categorize_data(self):
+        """ Get data directory and pass it to analysismodel.
+        """
+        datapath = filedialog.askdirectory(title="Data Directory")
+        try:
+            analysismodel.categorize_data(datapath)
+        except ValueError:
+            print("\ncontroller: Data categorization was cancelled.")
 
 
     ################################

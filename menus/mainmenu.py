@@ -52,7 +52,7 @@ class MainMenu(tk.Menu):
 
 
         ############## 
-        # Tools menu #
+        # Tools Menu #
         ##############
         tools_menu = tk.Menu(self, tearoff=False)
         tools_menu.add_command(
@@ -66,6 +66,17 @@ class MainMenu(tk.Menu):
         )
         # Add Tools menu to the menubar
         self.add_cascade(label="Tools", menu=tools_menu)
+
+
+        #############
+        # Data Menu #
+        #############
+        data_menu = tk.Menu(self, tearoff=False)
+        data_menu.add_command(
+            label='Categorize Data...',
+            command=self._event('<<DataCategorize>>')
+        )
+        self.add_cascade(label="Data", menu=data_menu)
 
 
         #################
