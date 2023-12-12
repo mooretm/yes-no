@@ -57,6 +57,7 @@ class MainFrame(ttk.Frame):
         frm_submit = ttk.Frame(frm_main)
         frm_submit.grid(row=20, column=5)
 
+
         ##################
         # Create Widgets #
         ##################
@@ -77,15 +78,22 @@ class MainFrame(ttk.Frame):
 
         # SEPARATOR #
 
+        # Response selection label
         self.text_var = tk.StringVar(value="Your Response:")        
         self.label = ttk.Label(frm_submit, textvariable=self.text_var, 
             style="Big.TLabel", width=18)
         self.label.grid(row=5, column=5, pady=(0,20))
 
+        # Submit button
         self.btn_submit = ttk.Button(frm_submit, text="Submit", 
             style="Big.TButton", command=self._on_submit, takefocus=0, 
             state='disabled')
         self.btn_submit.grid(row=10, column=5)
+
+        # Repeat button
+        self.btn_repeat = ttk.Button(frm_submit, text="Repeat", 
+            command=self._on_repeat, takefocus=0)
+        self.btn_repeat.grid(row=15, column=5, pady=(20,0))
 
 
     #############
@@ -110,3 +118,7 @@ class MainFrame(ttk.Frame):
         self.parent.unbind('<Return>')
         self.text_var.set("Your Response:")
         self.event_generate('<<MainSubmit>>')
+
+
+    def _on_repeat(self):
+        self.event_generate('<<MainRepeat>>')

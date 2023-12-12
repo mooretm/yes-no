@@ -9,6 +9,8 @@ import random
 import os
 from pathlib import Path
 
+import tkinter as tk
+from tkinter import messagebox
 
 #########
 # BEGIN #
@@ -152,6 +154,19 @@ class StimulusModel:
                 self.trial_data['resp_type'] = 'FA'
             elif (self.trial_data['expected_resp']=='no') and (response==0):
                 self.trial_data['resp_type'] = 'CR'
+
+            # Determine whether response was correct or incorrect
+            if (self.trial_data['resp_type'] == 'H') or \
+            (self.trial_data['resp_type'] == 'CR'):
+                msg = "Correct"
+            else:
+                msg = "Incorrect"
+
+            # Display feedback
+            messagebox.showinfo(
+                title="Feedback",
+                message=msg
+            )
         except IndexError:
             print("\nstimulusmodel: No expected response column in " +
                   "matrix file.")

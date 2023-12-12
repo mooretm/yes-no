@@ -149,7 +149,8 @@ class Application(tk.Tk):
             # Main View commands
             '<<MainYes>>': lambda _: self._on_yes(),
             '<<MainNo>>': lambda _: self._on_no(),
-            '<<MainSubmit>>': lambda _: self._on_submit()
+            '<<MainSubmit>>': lambda _: self._on_submit(),
+            '<<MainRepeat>>': lambda _: self._on_repeat(),
         }
 
         # Bind callbacks to sequences
@@ -424,6 +425,15 @@ class Application(tk.Tk):
 
         # Present trial
         self.present_trial()
+
+    def _on_repeat(self):
+        self._calc_level(self.matrix.iloc[self.trial_counter, 1])
+
+        self.present_audio(
+            audio=Path(self.matrix.iloc[self.trial_counter, 0]),
+            pres_level=self.sessionpars['adjusted_level_dB'].get()
+        )
+
 
 
     def _save_trial_data(self, data):
