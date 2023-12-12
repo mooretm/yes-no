@@ -60,8 +60,15 @@ def categorize_data(datapath):
     )
     df[df['actual_resp']==0].to_csv(r"Results\chirp_not_detected.csv")
 
+
     # Display plot
-    plt.bar(counts.index, counts.values)
+    #plt.bar(counts.index, counts.values) # No index in counts so this doesn't work
+    plt.bar(list(range(0, len(counts))), counts.values)
+    plt.tick_params(
+        axis='x',
+        which='both', 
+        labelbottom=False
+    )
     plt.title("Number of 'Yes' Responses per Stimulus\n" +
             f"Yes Criterion={max(data.stimulus.value_counts())}, No Criterion=0"
     )
