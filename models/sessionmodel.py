@@ -21,6 +21,9 @@ class SessionParsModel:
         # Session variables
         'subject': {'type': 'str', 'value': '999'},
         'condition': {'type': 'str', 'value': 'TEST'},
+        'question': {'type': 'str', 'value': 'Did you hear an artifact?'},
+        'yes_binding': {'type': 'str', 'value': "1 = Yes"},
+        'no_binding': {'type': 'str', 'value': "2 = No"},
         'randomize': {'type': 'int', 'value': 0},
         'repetitions': {'type': 'int', 'value': 1},
 

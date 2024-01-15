@@ -62,8 +62,8 @@ class Application(tk.Tk):
         #############
         #self.NAME = 'Yes-No Task Controller'
         self.NAME = 'Yes-No FBC DiQ'
-        self.VERSION = '0.1.0'
-        self.EDITED = 'August 23, 2023'
+        self.VERSION = '0.2.0'
+        self.EDITED = 'January 15, 2024'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -104,7 +104,7 @@ class Application(tk.Tk):
         # Load main view
         #self.grid_columnconfigure(0, weight=1) # center widget
         #self.grid_rowconfigure(0, weight=1) # center widget
-        self.main_frame = mainview.MainFrame(self)
+        self.main_frame = mainview.MainFrame(self, self.sessionpars)
         self.main_frame.grid(row=5, column=5)
 
         # Trial counter label
@@ -427,13 +427,15 @@ class Application(tk.Tk):
         self.present_trial()
 
     def _on_repeat(self):
-        self._calc_level(self.matrix.iloc[self.trial_counter, 1])
+        try:
+            self._calc_level(self.matrix.iloc[self.trial_counter, 1])
 
-        self.present_audio(
-            audio=Path(self.matrix.iloc[self.trial_counter, 0]),
-            pres_level=self.sessionpars['adjusted_level_dB'].get()
-        )
-
+            self.present_audio(
+                audio=Path(self.matrix.iloc[self.trial_counter, 0]),
+                pres_level=self.sessionpars['adjusted_level_dB'].get()
+            )
+        except AttributeError:
+            print("\ncontroller: No stimuli loaded.")
 
 
     def _save_trial_data(self, data):
