@@ -2,6 +2,17 @@
 
 ---
 
+## v0.2.0
+
+Date: January 15, 2024
+
+### Major Feature
+1. Ability to set the question and yes=/no= labels from the session view.
+<br>
+<br>
+
+---
+
 ## v0.1.1
 
 Date July 31, 2023

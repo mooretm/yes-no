@@ -74,6 +74,27 @@ class SessionDialog(tk.Toplevel):
             textvariable=self.sessionpars['condition']
             ).grid(row=10, column=10, sticky='w')
 
+        # Question label
+        ttk.Label(frm_session, text="Question:"
+            ).grid(row=15, column=5, sticky='e', **widget_options)
+        ttk.Entry(frm_session, width=20, 
+            textvariable=self.sessionpars['question']
+            ).grid(row=15, column=10, sticky='w')
+        
+        # Yes binding
+        ttk.Label(frm_session, text="Yes Label:"
+            ).grid(row=20, column=5, sticky='e', **widget_options)
+        ttk.Entry(frm_session, width=20, 
+            textvariable=self.sessionpars['yes_binding']
+            ).grid(row=20, column=10, sticky='w')
+
+        # No binding
+        ttk.Label(frm_session, text="No Label:"
+            ).grid(row=25, column=5, sticky='e', **widget_options)
+        ttk.Entry(frm_session, width=20, 
+            textvariable=self.sessionpars['no_binding']
+            ).grid(row=25, column=10, sticky='w')
+        
         # Randomize
         #self.random_var = tk.IntVar(value=self.sessionpars['randomize'])
         chk_random = ttk.Checkbutton(frm_options, text="Randomize",

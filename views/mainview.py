@@ -13,10 +13,10 @@ from tkinter import ttk
 # BEGIN #
 #########
 class MainFrame(ttk.Frame):
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, sessionpars, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-
+        self.sessionpars = sessionpars
         self.parent = parent
 
         # Populate frame with widgets
@@ -60,12 +60,12 @@ class MainFrame(ttk.Frame):
         ##################
         # Create Widgets #
         ##################
-        ttk.Label(frm_heading, text="Did you hear a chirp?", 
+        ttk.Label(frm_heading, textvariable=self.sessionpars['question'],
             style='Heading.TLabel').grid(row=5, column=5)
-        ttk.Label(frm_heading, text="1 = Yes", style="Medium.TLabel").grid(
-            row=10, column=5)
-        ttk.Label(frm_heading, text="2 = No", style="Medium.TLabel").grid(
-            row=15, column=5)
+        ttk.Label(frm_heading, textvariable=self.sessionpars['yes_binding'], 
+                  style="Medium.TLabel").grid(row=10, column=5)
+        ttk.Label(frm_heading, textvariable=self.sessionpars['no_binding'],
+                  style="Medium.TLabel").grid(row=15, column=5)
         
         # ttk.Button(frm_buttons, text="Yes", command=self._on_yes, 
         #     style='Big.TButton', takefocus=0).grid(row=5, column=5, padx=10)

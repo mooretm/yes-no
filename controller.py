@@ -62,8 +62,8 @@ class Application(tk.Tk):
         #############
         #self.NAME = 'Yes-No Task Controller'
         self.NAME = 'Yes-No FBC DiQ'
-        self.VERSION = '0.1.0'
-        self.EDITED = 'August 23, 2023'
+        self.VERSION = '0.2.0'
+        self.EDITED = 'January 15, 2024'
 
         # Create menu settings dictionary
         self._app_info = {
@@ -104,7 +104,7 @@ class Application(tk.Tk):
         # Load main view
         #self.grid_columnconfigure(0, weight=1) # center widget
         #self.grid_rowconfigure(0, weight=1) # center widget
-        self.main_frame = mainview.MainFrame(self)
+        self.main_frame = mainview.MainFrame(self, self.sessionpars)
         self.main_frame.grid(row=5, column=5)
 
         # Trial counter label
